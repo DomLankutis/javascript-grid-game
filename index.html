@@ -1,0 +1,18 @@
+<html>
+  <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+    <script src="lib/p5.play.js"></script>
+
+    <script src="./core/loadFile.js"></script>    
+    <script src="./core/generateMap.js"></script>
+    <script src="core/sprite.js"></script>  
+    <script src="main.js"></script>
+  </head>
+  <body style="background: grey">
+    <p>Upload sprites for map: <input type="file" id="sprites" multiple onchange="readImageFiles('sprites')"/></p>
+    <p>Upload map of game: <input type="file" id="map" onchange="readTextFile('map')" accept=".txt"/></p>
+    <output id="list"></output>
+  </body>
+</html>
