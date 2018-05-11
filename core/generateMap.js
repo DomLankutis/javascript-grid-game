@@ -6,14 +6,15 @@ let map = [[]],
  * Sprites should be named appropriately and all have a consistent size (remember this is for a grid map)
  * before using the loadSprites function.
  * 
- * @param {Number} Size         The size that all the sprites should be (will be resized anyway)
+ * @param {Number} SIZE         The size that all the sprites should be (will be resized anyway)
  * 
  * @returns                     Object with all the sprites and their file names
  */
 function loadSprites(SIZE) {
     let sprites = new SpriteSheet();
     for (let imageName in images) {
-        sprites.addToSheet(imageName[0] ,images[imageName], SIZE);
+        tint(255,255);
+        sprites.addToSheet(imageName ,images[imageName], SIZE);
     }
     return sprites;
 }
@@ -48,7 +49,7 @@ function staticCollisionsVerticalCheck(map, size) {
     let newArr = [];
     let exists = new Set();
     for (let y = 0; y < map.length; y++) {
-        // For every object in y compare it with every object in y + 1, loop this untill there are no modifications then return
+        // For every object in y compare it with every object in y + 1, loop this until there are no modifications then return
         newArr.push([]);
         for (let x = 0; x < map[y].length; x++) {
             let obj = map[y][x];
@@ -84,7 +85,7 @@ function staticCollisionsVerticalCheck(map, size) {
 
 /**
  * Generates all the static collisions for the map, by creating the biggest rectangles possible
- * as to reduce the itteration count when checking if a collision has occured
+ * as to reduce the iteration count when checking if a collision has occurred
  * 
  * @param {Array} map           The Map of the static collisions
  * 
