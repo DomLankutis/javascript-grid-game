@@ -5,7 +5,7 @@ class SpriteSheet {
     }
 
     /**
-     * Adds a single sprite to the grouped spritesheet. Where all the sprites can be accesed.
+     * Adds a single sprite to the grouped spritesheet. Where all the sprites can be accessed.
      * 
      * @param {Text} spriteName     Name of the sprite
      * @param {Image} sprite        The loadImage() sprite
@@ -80,57 +80,111 @@ class Player extends Sprite{
     }
 
     /**
-     * Private function to check if the object is colliding with the enviroment.
+     * Private function to check if the object is colliding with the environment.
      * Modifies the velocity so that it only reaches the collision but cant go through or into the collision
      */
-    _ConstrainWithinEnviroment() {
-        let posWithVelocity = {
+    _ConstrainWithinEnvironment() {
+        let positionAfterVelocity = {
             x: this.pos.x + this.velocity.x,
             y: this.pos.y + this.velocity.y
         };
+        let verticalCollisionHasBeenDone
         for (let collision of staticCollisions) {
-            if (posWithVelocity.x + this.size > collision.x && posWithVelocity.x < collision.x + collision.width &&
-            posWithVelocity.y + this.size > collision.y && posWithVelocity.y < collision.y + collision.height) {
-                let modifierX = 0, modifierY = 0;
-                let collisionMidPoint = {
-                    x: (collision.x + collision.x + collision.width) / 2,
-                    y: (collision.y + collision.y + collision.height) / 2
-                };
-                let leftSideColliding = posWithVelocity.x < collision.x + collision.width && posWithVelocity.x + this.size > collision.x + collision.width;
-                let rightSideColliding = posWithVelocity.x + this.size > collision.x && posWithVelocity.x < collision.x;
-                let topColiding = posWithVelocity.y < collision.y + collision.height && posWithVelocity.y + this.size > collision.y + collision.height;
-                let bottomColliding = posWithVelocity.y + this.size > collision.y && posWithVelocity.y + this.size > collision.y;
+            
+            let collisionRight = collision.x + collision.width;
+            let collisionLeft = collision.x;
+            let collisionTop = collision.y;
+            let collisionBottom = collision.y + collision.height;
 
-                if (leftSideColliding && !rightSideColliding && (topColiding || bottomColliding)) {
-                    if (bottomColliding && !topColiding) {
+            let playerRight = positionAfterVelocity.x + this.size;
+            let playerLeft = positionAfterVelocity.x;
+            let playerTop = positionAfterVelocity.y;
+            let playerBottom = positionAfterVelocity.y + this.size;
+            collision.col = 0;
+            if (playerRight > collisionLeft && playerLeft < collisionRight && playerBottom > collisionTop && playerTop < collisionBottom) {
+
+
+                let leftSideColliding = playerLeft < collisionRight && collisionRight < playerRight;
+                let rightSideColliding = playerRight > collisionLeft && collisionLeft > playerLeft;
+                let topColliding = playerTop < collisionBottom && collisionBottom < playerBottom;
+                let bottomColliding = playerBottom > collisionTop && collisionBottom > playerTop;
+
+                if (topColliding && !bottomColliding && !(leftSideColliding || rightSideColliding) && !verticalCollisionHasBeenDone) {
+                    this.velocity.y -= playerTop - (collisionBottom);
+                }
+                if (bottomColliding && !topColliding && !(leftSideColliding || rightSideColliding) && !verticalCollisionHasBeenDone) {
+                    this.velocity.y -= playerBottom - collisionTop;
+                }
+                if (bottomColliding && topColliding && !(leftSideColliding || rightSideColliding) && !verticalCollisionHasBeenDone) {
+                    this.velocity.y -= playerTop - collisionBottom;
+                }
+
+                if (verticalCollisionHasBeenDone) {
+                    verticalCollisionHasBeenDone = false;
+                }
+
+                if (leftSideColliding && !rightSideColliding && (topColliding || bottomColliding)) {
+                    if (bottomColliding && !topColliding) {
                         if (this.velocity.x  < 0) {
-                            this.velocity.x -= posWithVelocity.x - (collision.x + collision.width);
-                        }
-                    }else {
-                        this.velocity.x -= posWithVelocity.x - (collision.x + collision.width);
-                    }
-                } else
-                if (rightSideColliding && !leftSideColliding && (topColiding || bottomColliding)) {
-                    if (bottomColliding && !topColiding) {
-                        if (this.velocity.x > 0) {
-                            this.velocity.x -= posWithVelocity.x + this.size - collision.x;                                                           
+                            this.velocity.x -= playerLeft - (collisionRight);
                         }
                     } else {
-                        this.velocity.x -= posWithVelocity.x + this.size - collision.x;                                                           
+                        this.velocity.x -= playerLeft - (collisionRight);
+                        if (topColliding && bottomColliding) {
+                            if (collisionTop < playerTop) {
+                                if (this.velocity.y > 0) {
+                                    let diff = playerTop - collisionTop;
+                                    if (Math.abs(diff) === 1) {
+                                        this.velocity.y -= diff
+                                    }else {
+                                        this.velocity.y -= (playerBottom)- (collisionBottom);
+                                    }
+                                } else if (this.velocity.y < 0) {
+                                    this.velocity.y -= playerTop - collisionBottom;
+                                    this.velocity.x = 0;
+                                }
+                            } else {
+                                this.velocity.y -= playerTop - (collisionBottom);
+                            }
+                            verticalCollisionHasBeenDone = true;
+                        }
                     }
-                } else
-                if (topColiding && bottomColliding && !(leftSideColliding || rightSideColliding)) {
-                    this.velocity.y -= posWithVelocity.y - (collision.y + collision.height);                
-                } else 
-                if (bottomColliding && !topColiding && !(leftSideColliding || rightSideColliding)) {
-                    this.velocity.y -= posWithVelocity.y + this.size - collision.y;                                          
                 }
+
+                if (rightSideColliding && !leftSideColliding && (topColliding || bottomColliding)) {
+                    if (bottomColliding && !topColliding) {
+                        if (this.velocity.x > 0) {
+                            this.velocity.x -= playerRight - collisionLeft;
+                        }
+                    } else {
+                        this.velocity.x -= playerRight - collisionLeft;
+                        if ( topColliding && bottomColliding) {
+                            if (collisionTop < playerTop) {
+                                if (this.velocity.y > 0) {
+                                    let diff = playerTop - collisionTop;
+                                    if (Math.abs(diff) === 1) {
+                                        this.velocity.y -= diff
+                                    }else {
+                                        this.velocity.y -= (playerBottom)- (collisionBottom);
+                                    }
+                                } else if (this.velocity.y < 0) {
+                                    this.velocity.y -= playerTop - collisionBottom;
+                                    this.velocity.x = 0;
+                                }
+                            } else {
+                                this.velocity.y -= playerTop - (collisionBottom);
+                            }
+                            verticalCollisionHasBeenDone = true;
+                        }
+                    }
+                }
+                collision.col = 255;
             }
         }
     }
     
     /**
-     * Applyies all of the resisting forces on to the objects velocity.
+     * Applies all of the resisting forces on to the objects velocity.
      */
     _applyForces() {
         if (this.velocity.x > 0) {
@@ -145,13 +199,13 @@ class Player extends Sprite{
      * Adds the velocity in a said axis.
      * 
      * @param {String} axis         The velocity axis for the object
-     * @param {Number} amount       The ammount that is to be added / reduced
+     * @param {Number} amount       The amount that is to be added / reduced
      */
     _addToVelocity(axis, amount) {
         let velocityLimit = this.velocity.limit;
         if (Math.abs(this.velocity[axis] + amount) < velocityLimit) {
             this.velocity[axis] += amount;
-        }else if (Math.abs(this.velocity[axis] < velocityLimit) && Math.abs(this.velocity[axis] + amount) > velocityLimit) {
+        }else if (Math.abs(this.velocity[axis]) < velocityLimit && Math.abs(this.velocity[axis] + amount) > velocityLimit) {
             if (amount < 0) {
                 this.velocity[axis] = -velocityLimit;
             } else {
@@ -187,12 +241,12 @@ class Player extends Sprite{
         }
 
         this._applyForces();
-        this._ConstrainWithinEnviroment();
+        this._ConstrainWithinEnvironment();
         this._setPosition();
     }
 
     /**
-     * The condensed function that will handle the keyboard inputs, apply forces, constrain the object within the enviroment and
+     * The condensed function that will handle the keyboard inputs, apply forces, constrain the object within the environment and
      * set the position of the object.
      * 
      */
